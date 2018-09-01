@@ -185,3 +185,43 @@ while True:
     if fj[0] == "出牌":  # 出牌　房间号
         s = d[fj[1]]
         d[fj[1]] = pool.apply(chuli, (s, fj))
+
+
+#以下为实验内容
+# from socket import *
+# from select import *
+
+# s = socket()
+# s.setsockopt(SOL_SOCKET,SO_REUSEADDR,1)
+# s.bind(('0.0.0.0',8888))
+# s.listen(5)
+
+# #创建poll 对象
+# p = poll()
+
+# #创建地图
+# fdmap = {s.fileno():s}
+
+# #添加关注
+# p.register(s,POLLIN | POLLERR)
+
+# while True:
+#     #进行IO监控
+#     events = p.poll()
+#     for fd,event in events:
+#         if fd == s.fileno():
+#             c,addr = fdmap[fd].accept()
+#             print("Connect from ",addr)
+
+#             p.register(c,POLLIN)
+#             fdmap[s.fileno()] = c
+#         else:
+#             data = fdmap[fd].recv(1024)
+#             if not data:
+#                 p.unregister(fd)
+#                 famap[fd].close()
+#                 del fdmap[fd]
+
+#             else:
+#                 print(data.decode())
+#                 fdmap[fd].send('收到'.encode())
