@@ -24,8 +24,9 @@ class Client(object):
                 continue
             elif passwd == "##":
                 return
-            msg = "注册^{}^{}".format(name,passwd)
-            self.sockfd.send(msg.decode())
+            msg = "L^{}^{}".format(name,passwd)
+            self.sockfd.send(msg.encode())
+            print(1111111)
             data = self.sockfd.recv(1024).decode()
             if data == "OK":
                 print('注册成功')
@@ -56,6 +57,7 @@ def main():
                 sys.exit("客户端退出")
         except KeyboardInterrupt:
             print("谢谢使用")
+            sys.exit("Bye")
 
 
 if __name__ == "__main__":
