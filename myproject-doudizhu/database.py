@@ -1,5 +1,6 @@
 #! /usr/bin/python3
 from pymysql import *
+from time import sleep
 
 class Mydatabase:
     def __init__(self,host='localhost',port=3306,db='gamehall',
@@ -52,26 +53,29 @@ class Mydatabase:
     def insert_user(self,name,passwd,niname,telnum): #新用户注册
         self.open()
         sql = "insert into user(username,password,user_nicheng,telnum)\
-               values('%s',%d,'%s','%s')"
-        self.cursor.execute(sql %(name,int(passwd),niname,telnum))
+               values('%s','%s','%s','%s')"%(name,passwd,niname,telnum)
+        print(sql)
+        self.cursor.execute(sql)
         self.conn.commit()
 
         sql = "select userid from user where username = '%s'"
         self.cursor.execute(sql %name)
         r = self.cursor.fetchone()
+        print(r[0])
         self.conn.commit()
 
-        sql = "insert into game(uid) values(%d)"
-        r = self.cursor.execute(sql %r[0])
+        sql = "insert into game(uid,username) values('%d','%s')"
+        r = self.cursor.execute(sql %(r[0],name))
         self.conn.commit()
 
         self.close()
+        sleep(0.1)
 
-    def user_login(self,name):  #用户每次登录 登录次数加一
+    def user_login(self,count,name):  #用户每次登录 登录次数加一
         self.open()
-        sql = "update user set login_count = login_count + 1\
+        sql = "update user set login_count = %d\
                where username = '%s'"
-        self.cursor.execute(sql %name)
+        self.cursor.execute(sql %(count,name))
         self.conn.commit()
         self.close()
 
@@ -95,7 +99,7 @@ class Mydatabase:
 
     def update_paswd(self,name,number): #修改密码
         self.open()
-        sql = "update user set telnum = %d where username = '%s'"
+        sql = "update user set telnum = %s where username = '%s'"
         self.cursor.execute(sql %(name,number))
         self.conn.commit()
         self.close()
@@ -224,7 +228,50 @@ class Mydatabase:
         self.close()
         return r[0]
 
+    def query_friend(self,name):
+        print("开始查询好友")
+        self.open()
+        sql = "select friends_name from friends_list where username='%s'"
+        self.cursor.execute(sql %name)
+        r = self.cursor.fetchall()
+        self.conn.commit()
+        self.close()
+        print(r)
+        return r
 
+    def add_friend(self,name,friend):
+        self.open()
+        sql = "insert into friends_list(username,friends_name) values('%s','%s')"
+        self.cursor.execute(sql %(name,friend))
+        self.conn.commit()
+        self.close()
+        print("好友添加成功")
+
+    def drop_friend(self,name,friend):
+        self.open()
+        sql = "delete from friends_list where friends_name='%s' and username='%s'"
+        self.cursor.execute(sql %(friend,name))
+        self.conn.commit()
+        self.close()
+        print("删除成功")
+
+    def add_mail(self,recv_name,send_name,message,datetime):
+        self.open()
+        sql = "insert into e_mail(recv_name,send_name,message,datetime) \
+                  values('%s','%s','%s','%s')"
+        self.cursor.execute(sql %(recv_name,send_name,message,datetime))
+        self.conn.commit()
+        self.close()
+        print("邮件缓存成功")
+    
+    def recv_mail(self,recv_name):
+        self.open()
+        sql = "select send_name,message,datetime from e_mail where recv_name='%s'"
+        self.cursor.execute(sql %recv_name)
+        r = self.cursor.fetchall()
+        self.conn.commit()
+        self.close()
+        return r
 # mdb = Mydatabase()
 
 # mdb.insert_user('周勇',77777,'dda','13684934874')
