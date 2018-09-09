@@ -280,11 +280,13 @@ def main():
             cmd = int(input("请选择>>"))
             if cmd == 1:
                 name = user.do_login()
-                user.second_menu(name)
+                if name:
+                    user.second_menu(name)
             elif cmd == 2:
                 print(2222222)
                 name = user.do_register()
-                user.second_menu(name)
+                if name:
+                    user.second_menu(name)
             elif cmd == 4:
                 msg = "E^bye" 
                 sockfd.send(msg.encode())

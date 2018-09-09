@@ -211,77 +211,77 @@ def main():
     p.register(sockfd,EPOLLIN|EPOLLERR)
 
     while True:
+        try:
+            events = p.poll()
+            for fd,event in events:
+                if fd == sockfd.fileno():
+                    c,addr = dic_map[fd].accept()
+                    CL = Server(c)
+                    print("Connect from ",addr)
+                    #将c添加关注
+                    p.register(c,EPOLLIN)
+                    #维护地图
+                    dic_map[c.fileno()] = c
+                    print(222222)
+                else:
+                    print(11111)
+                    data = dic_map[fd].recv(2048).decode()
+                    print(data)
+                    if not data:
+                        p.unregister(fd)
+                        dic_map[fd].close()
+                        del dic_map[fd]
+                        continue
 
-        events = p.poll()
-        for fd,event in events:
-            if fd == sockfd.fileno():
-                c,addr = dic_map[fd].accept()
-                CL = Server(c)
-                print("Connect from ",addr)
-                #将c添加关注
-                p.register(c,EPOLLIN)
-                #维护地图
-                dic_map[c.fileno()] = c
-                print(222222)
-            else:
-                print(11111)
-                data = dic_map[fd].recv(2048).decode()
-                print(data)
-                if not data:
-                    p.unregister(fd)
-                    dic_map[fd].close()
-                    del dic_map[fd]
-                    continue
+                    Lst = data.split("^")
+                    print(Lst)
+                    if len(Lst) >1 :
+                        for i in Lst:
+                            if  i[0] == "L":
+                                #注册
+                                CL.do_login(Lst,user_dict)
+                            elif i[0]== "R":
+                                #登录
+                                CL.do_register(Lst,user_dict)
+                            elif i[0] == 'P':
+                                #开始游戏
+                                CL.do_dizhu(Lst,user_dict)
+                            elif i[0] =="M":
+                                #查询信息
+                                CL.do_query_msg(Lst)
+                            elif i[0] =="F":
+                                #查询好友列表
+                                CL.do_query_friend(Lst)
+                            elif i[0] == "A":
+                                #添加好友
+                                CL.do_add_friend(Lst)
+                            elif i[0] == "D":
+                                #删除好友
+                                CL.do_drop_friend(Lst)
+                            elif i[0] == "S":
+                                #发送邮件
+                                CL.do_sendmail(Lst,user_dict)
+                            elif i[0] == "C":
+                                #收邮件
+                                CL.do_recvmail(Lst)
 
-                Lst = data.split("^")
-                print(Lst)
-                if len(Lst) >1 :
-                    for i in Lst:
-                        if  i[0] == "L":
-                            #注册
-                            CL.do_login(Lst,user_dict)
-                        elif i[0]== "R":
-                            #登录
-                            CL.do_register(Lst,user_dict)
-                        elif i[0] == 'P':
-                            #开始游戏
-                            CL.do_dizhu(Lst,user_dict)
-                        elif i[0] =="M":
-                            #查询信息
-                            CL.do_query_msg(Lst)
-                        elif i[0] =="F":
-                            #查询好友列表
-                            CL.do_query_friend(Lst)
-                        elif i[0] == "A":
-                            #添加好友
-                            CL.do_add_friend(Lst)
-                        elif i[0] == "D":
-                            #删除好友
-                            CL.do_drop_friend(Lst)
-                        elif i[0] == "S":
-                            #发送邮件
-                            CL.do_sendmail(Lst,user_dict)
-                        elif i[0] == "C":
-                            #收邮件
-                            CL.do_recvmail(Lst)
-
-                        elif i[0] == "B":
-                            del user_dict[Lst[1]]
-                            print(user_dict)
-                        elif i[0] == 'E':
-                            print("客户端退出")
-                            p.unregister(fd)
-                            dic_map[fd].close()
-                            del dic_map[fd]
-
-
+                            elif i[0] == "B":
+                                del user_dict[Lst[1]]
+                                print(user_dict)
+                            elif i[0] == 'E':
+                                print("客户端退出")
+                                p.unregister(fd)
+                                dic_map[fd].close()
+                                del dic_map[fd]
+        except KeyboardInterrupt:
+            print("服务器退出")
+            sys.exit("Bye")
+        except:
+            continue
 
 
 
 
 if __name__ =="__main__":
-    try:
-        main()
-    except KeyboardInterrupt:
-        print("服务器退出")
-        sys.exit("Bye")
+    main()
+
