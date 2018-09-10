@@ -193,12 +193,47 @@ class Server(object):
         time.sleep(0.01)
         self.c.send(b"##")
 
+    def start_game(self,Lst,user_dict,room_dict):
+        if Lst[2] == "创建":
+            #创建房间
+            if Lst[3] in room_dict:
+                print("此房间号已经存在")
+                self.c.send("房间已经存在".encode())
+            else:
+                print("新房间创建成功")
+                room_dict[Lst[3]] = [self.c]
+                print(room_dict)
+                self.c.send(b"OK")
+
+        if Lst[2] == "加入":
+            #加入房间
+            if Lst[3] not in room_dict:
+                print("房间不存在")
+                self.c.send("房间不存在，请重新选择")
+            elif Lst[3] in room_dict:
+                if len(room_dict[Lst[3]]) >= 3:
+                    print("房间人数已满")
+                    self.c.send("房间人数已满".encode())
+                elif len(room_dict[Lst[3]]) <= 0:
+                    del room_dict[Lst[3]]
+                    self.c.send("房间不存在，请重新选择")
+                else:
+                    print("加入房间成功")
+                    room_dict[Lst[3]].append(self.c)
+                    if len(room_dict[Lst[3]]) ==3:
+                        #如果人数满了，通知房间的用户开始游戏
+                        print('游戏开始')
+                        for i in room_dict[Lst[3]]:
+                            i.send("游戏开始".encode())
+
+            
+
 
 
 
 def main():
-    #字典用来存储登录在线的用户
-    user_dict = {}
+    user_dict = {}     #字典用来存储登录在线的用户,用户名为建，套接字为值
+    room_dict = {}     #用来存储已经创建的房间号，即房间内的用户信息,值为列表
     sockfd = socket()
     sockfd.setsockopt(SOL_SOCKET,SO_REUSEADDR,1)
     sockfd.bind(ADDR)
@@ -244,8 +279,10 @@ def main():
                                 #登录
                                 CL.do_register(Lst,user_dict)
                             elif i[0] == 'P':
+                                print("00000000000000")
+                                print(room_dict)
                                 #开始游戏
-                                CL.do_dizhu(Lst,user_dict)
+                                CL.start_game(Lst,user_dict,room_dict)
                             elif i[0] =="M":
                                 #查询信息
                                 CL.do_query_msg(Lst)

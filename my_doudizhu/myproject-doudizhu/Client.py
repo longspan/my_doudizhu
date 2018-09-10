@@ -154,6 +154,57 @@ class Client(object):
         self.sockfd.send(msg.encode())
         print("注销完成")
 
+    def start_game(self,name):
+        while True:
+            print("""
+                1. 创建房间
+                2. 加入房间
+                3. 快速开始
+                4. 退出
+                """)
+            try:
+                cmd = int(input("请选择>>"))
+                if cmd == 1:
+                    self.create_room(name)
+                elif cmd == 2:
+                    self.join_room(name)
+            except ValueError:
+                print("错误命令")
+                continue
+
+
+
+    def create_room(self,name):
+        #"创建房间"
+        while True:
+            room_number = input("请输入房间号>>")
+            msg = "P^客户端^创建^" +room_number + "^" +name
+            self.sockfd.send(msg.encode())
+            data = self.sockfd.recv(1024).decode()
+            if data == "OK":
+                print("创建房间成功,等待开始")
+                data = self.sockfd.recv(1024).decode()
+                if data == "游戏开始":
+                    print("游戏开始")
+                    break
+            else:
+                print(data)
+
+    def join_room(self,name):
+        while True:
+            pass
+            room_number = input("请输入加入的房间号")
+            msg = "P^客户端^加入^" + room_number + name
+            self.sockfd.send(msg.encode())
+            data = self.sockfd.recv(1024).decode()
+            if data == "OK":
+                print("进入房间成功，等待开始")
+                data = self.sockfd.recv(1024).decode()
+                if data == "游戏开始":
+                    print("游戏开始")
+                    break
+            else:
+                print(data)
 
 
     def second_menu(self,name):
@@ -162,7 +213,7 @@ class Client(object):
                 1. 开始游戏
                 2. 查询信息
                 3. 好友信息
-                4. 积分充值(不实现)
+                4. 金币充值(不实现)
                 5. 设置
                 6. 注销
                 """)
@@ -179,7 +230,7 @@ class Client(object):
                 continue
 
             if cmd == 1:
-                print("哈哈,没有充钱，就不让你玩")
+                self.start_game(name)
             elif cmd ==2:
                 self.do_query_msg(name)
             elif cmd == 3:
